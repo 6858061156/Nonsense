@@ -43,7 +43,7 @@
 <body>
 
 <div class="card">
-    <h2>Thai Alphabet Drill ðŸ‡¹ðŸ‡­</h2>
+    <h2>Thai Alphabet Drill 101 </h2>
     <div class="letter" id="letter"></div>
 
     <div id="counter" style="margin-bottom:8px; font-weight:600;"></div>
@@ -168,11 +168,11 @@
 
         if (choice === data[index].answer) {
             feedback.style.color = "green";
-            feedback.innerText = "à¸–à¸¹à¸à¸•à¹‰à¸­à¸‡ âœ…";
+            feedback.innerText = "Correct u are the best 67!";
             // Optionally mark correct answers as known automatically? for now, don't auto-mark
         } else {
             feedback.style.color = "red";
-            feedback.innerText = "à¹„à¸¡à¹ˆà¸–à¸¹à¸ âŒ à¸„à¸³à¸•à¸­à¸šà¸„à¸·à¸­ " + data[index].answer;
+            feedback.innerText = "Sorry try again" + data[index].answer;
         }
 
         setTimeout(() => {
