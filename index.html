@@ -124,37 +124,50 @@
         return -1;
     }
 
+    function getRandomUnk() {
+        const unknowns = [];
+        for (let i = 0; i < data.length; i++) if (!known.has(i)) unknowns.push(i);
+        if (unknowns.length === 0) return -1;
+        return unknowns[Math.floor(Math.random() * unknowns.length)];
+    }
+
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
     function loadQuestion() {
         updateCounter();
         const letterEl = document.getElementById("letter");
         const feedbackEl = document.getElementById("feedback");
         feedbackEl.innerText = "";
 
-        // find next un-known card
+        // pick a random un-known card
         if (known.size >= data.length) {
             letterEl.innerText = "All cards known!";
             document.getElementById("choices").innerHTML = "";
             document.getElementById("markKnownBtn").style.display = "none";
             return;
         }
-
-        if (known.has(index)) {
-            const next = findNextUnk(index + 1);
-            if (next === -1) {
-                letterEl.innerText = "All cards known!";
-                document.getElementById("choices").innerHTML = "";
-                document.getElementById("markKnownBtn").style.display = "none";
-                return;
-            }
-            index = next;
+        const nextIdx = getRandomUnk();
+        if (nextIdx === -1) {
+            letterEl.innerText = "All cards known!";
+            document.getElementById("choices").innerHTML = "";
+            document.getElementById("markKnownBtn").style.display = "none";
+            return;
         }
+        index = nextIdx;
 
         letterEl.innerText = data[index].letter;
 
         const choicesDiv = document.getElementById("choices");
         choicesDiv.innerHTML = "";
 
-        data[index].choices.forEach(choice => {
+        const shuffled = shuffleArray(data[index].choices.slice());
+        shuffled.forEach(choice => {
             const btn = document.createElement("button");
             btn.innerText = choice;
             btn.onclick = () => checkAnswer(choice);
@@ -176,26 +189,18 @@
         }
 
         setTimeout(() => {
-            const next = findNextUnk(index + 1);
-            if (next === -1) {
-                // all known
-                index = 0;
-            } else {
-                index = next;
-            }
+            const next = getRandomUnk();
+            if (next === -1) index = 0;
+            else index = next;
             loadQuestion();
         }, 2000);
     }
 
     document.getElementById("markKnownBtn").addEventListener("click", () => {
         known.add(index);
-        const next = findNextUnk(index + 1);
-        if (next === -1) {
-            loadQuestion();
-        } else {
-            index = next;
-            loadQuestion();
-        }
+        const next = getRandomUnk();
+        if (next === -1) loadQuestion();
+        else { index = next; loadQuestion(); }
     });
 
     document.getElementById("resetKnownBtn").addEventListener("click", () => {
