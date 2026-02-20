@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Thai Alphabet Drill</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef2f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .letter {
+            font-size: 80px;
+            margin: 15px 0;
+        }
+        button {
+            margin: 6px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            background: #2196F3;
+            color: white;
+        }
+        .feedback {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Thai Alphabet Drill ðŸ‡¹ðŸ‡­</h2>
+    <div class="letter" id="letter"></div>
+
+    <div id="choices"></div>
+
+    <div class="feedback" id="feedback"></div>
+</div>
+
+<script>
+    const data = [
+        { letter: "à¸", answer: "à¸ à¹„à¸à¹ˆ", choices: ["à¸ à¹„à¸à¹ˆ", "à¸‚ à¹„à¸‚à¹ˆ", "à¸ˆ à¸ˆà¸²à¸™"] },
+        { letter: "à¸‚", answer: "à¸‚ à¹„à¸‚à¹ˆ", choices: ["à¸„ à¸„à¸§à¸²à¸¢", "à¸‚ à¹„à¸‚à¹ˆ", "à¸‡ à¸‡à¸¹"] },
+        { letter: "à¸ˆ", answer: "à¸ˆ à¸ˆà¸²à¸™", choices: ["à¸Š à¸Šà¹‰à¸²à¸‡", "à¸ˆ à¸ˆà¸²à¸™", "à¸‹ à¹‚à¸‹à¹ˆ"] },
+        { letter: "à¸‡", answer: "à¸‡ à¸‡à¸¹", choices: ["à¸‡ à¸‡à¸¹", "à¸™ à¸«à¸™à¸¹", "à¸¡ à¸¡à¹‰à¸²"] },
+        { letter: "à¸•", answer: "à¸• à¹€à¸•à¹ˆà¸²", choices: ["à¸– à¸–à¸¸à¸‡", "à¸• à¹€à¸•à¹ˆà¸²", "à¸— à¸—à¸«à¸²à¸£"] }
+    ];
+
+    let index = 0;
+
+    function loadQuestion() {
+        document.getElementById("letter").innerText = data[index].letter;
+        document.getElementById("feedback").innerText = "";
+
+        const choicesDiv = document.getElementById("choices");
+        choicesDiv.innerHTML = "";
+
+        data[index].choices.forEach(choice => {
+            const btn = document.createElement("button");
+            btn.innerText = choice;
+            btn.onclick = () => checkAnswer(choice);
+            choicesDiv.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(choice) {
+        const feedback = document.getElementById("feedback");
+
+        if (choice === data[index].answer) {
+            feedback.style.color = "green";
+            feedback.innerText = "à¸–à¸¹à¸à¸•à¹‰à¸­à¸‡ âœ…";
+        } else {
+            feedback.style.color = "red";
+            feedback.innerText = "à¹„à¸¡à¹ˆà¸–à¸¹à¸ âŒ à¸„à¸³à¸•à¸­à¸šà¸„à¸·à¸­ " + data[index].answer;
+        }
+
+        setTimeout(() => {
+            index = (index + 1) % data.length;
+            loadQuestion();
+        }, 2000);
+    }
+
+    loadQuestion();
+</script>
+
+</body>
+</html>
