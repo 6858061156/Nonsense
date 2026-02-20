@@ -46,7 +46,14 @@
     <h2>Thai Alphabet Drill ðŸ‡¹ðŸ‡­</h2>
     <div class="letter" id="letter"></div>
 
+    <div id="counter" style="margin-bottom:8px; font-weight:600;"></div>
+
     <div id="choices"></div>
+
+    <div style="margin-top:10px;">
+        <button id="markKnownBtn" style="background:#4CAF50;">Mark Known</button>
+        <button id="resetKnownBtn" style="background:#f44336; display:none;">Reset Known</button>
+    </div>
 
     <div class="feedback" id="feedback"></div>
 </div>
@@ -61,10 +68,49 @@
     ];
 
     let index = 0;
+    const known = new Set();
+
+    function updateCounter() {
+        const remaining = Math.max(0, data.length - known.size);
+        document.getElementById("counter").innerText = `Remaining: ${remaining} / ${data.length}`;
+        document.getElementById("resetKnownBtn").style.display = known.size > 0 ? "inline-block" : "none";
+    }
+
+    function findNextUnk(startIndex) {
+        if (known.size >= data.length) return -1;
+        for (let i = 0; i < data.length; i++) {
+            const idx = (startIndex + i) % data.length;
+            if (!known.has(idx)) return idx;
+        }
+        return -1;
+    }
 
     function loadQuestion() {
-        document.getElementById("letter").innerText = data[index].letter;
-        document.getElementById("feedback").innerText = "";
+        updateCounter();
+        const letterEl = document.getElementById("letter");
+        const feedbackEl = document.getElementById("feedback");
+        feedbackEl.innerText = "";
+
+        // find next un-known card
+        if (known.size >= data.length) {
+            letterEl.innerText = "All cards known!";
+            document.getElementById("choices").innerHTML = "";
+            document.getElementById("markKnownBtn").style.display = "none";
+            return;
+        }
+
+        if (known.has(index)) {
+            const next = findNextUnk(index + 1);
+            if (next === -1) {
+                letterEl.innerText = "All cards known!";
+                document.getElementById("choices").innerHTML = "";
+                document.getElementById("markKnownBtn").style.display = "none";
+                return;
+            }
+            index = next;
+        }
+
+        letterEl.innerText = data[index].letter;
 
         const choicesDiv = document.getElementById("choices");
         choicesDiv.innerHTML = "";
@@ -75,6 +121,7 @@
             btn.onclick = () => checkAnswer(choice);
             choicesDiv.appendChild(btn);
         });
+        document.getElementById("markKnownBtn").style.display = "inline-block";
     }
 
     function checkAnswer(choice) {
@@ -83,16 +130,40 @@
         if (choice === data[index].answer) {
             feedback.style.color = "green";
             feedback.innerText = "à¸–à¸¹à¸à¸•à¹‰à¸­à¸‡ âœ…";
+            // Optionally mark correct answers as known automatically? for now, don't auto-mark
         } else {
             feedback.style.color = "red";
             feedback.innerText = "à¹„à¸¡à¹ˆà¸–à¸¹à¸ âŒ à¸„à¸³à¸•à¸­à¸šà¸„à¸·à¸­ " + data[index].answer;
         }
 
         setTimeout(() => {
-            index = (index + 1) % data.length;
+            const next = findNextUnk(index + 1);
+            if (next === -1) {
+                // all known
+                index = 0;
+            } else {
+                index = next;
+            }
             loadQuestion();
         }, 2000);
     }
+
+    document.getElementById("markKnownBtn").addEventListener("click", () => {
+        known.add(index);
+        const next = findNextUnk(index + 1);
+        if (next === -1) {
+            loadQuestion();
+        } else {
+            index = next;
+            loadQuestion();
+        }
+    });
+
+    document.getElementById("resetKnownBtn").addEventListener("click", () => {
+        known.clear();
+        index = 0;
+        loadQuestion();
+    });
 
     loadQuestion();
 </script>
