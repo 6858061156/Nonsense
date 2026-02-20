@@ -108,6 +108,7 @@
 
     let index = 0;
     const known = new Set();
+    const seen = new Set();
 
     function updateCounter() {
         const remaining = Math.max(0, data.length - known.size);
@@ -125,8 +126,15 @@
     }
 
     function getRandomUnk() {
-        const unknowns = [];
-        for (let i = 0; i < data.length; i++) if (!known.has(i)) unknowns.push(i);
+        if (known.size >= data.length) return -1;
+        let unknowns = [];
+        for (let i = 0; i < data.length; i++) if (!known.has(i) && !seen.has(i)) unknowns.push(i);
+        // if all remaining unknowns were seen this round, start a new cycle (clear seen)
+        if (unknowns.length === 0) {
+            // reset seen for next cycle, but keep known
+            seen.clear();
+            for (let i = 0; i < data.length; i++) if (!known.has(i)) unknowns.push(i);
+        }
         if (unknowns.length === 0) return -1;
         return unknowns[Math.floor(Math.random() * unknowns.length)];
     }
@@ -163,6 +171,10 @@
 
         letterEl.innerText = data[index].letter;
 
+        // mark this card as seen for this cycle (reduces remaining)
+        seen.add(index);
+        updateCounter();
+
         const choicesDiv = document.getElementById("choices");
         choicesDiv.innerHTML = "";
 
@@ -198,6 +210,9 @@
 
     document.getElementById("markKnownBtn").addEventListener("click", () => {
         known.add(index);
+        // if it was seen this cycle, remove from seen so we don't double-count
+        if (seen.has(index)) seen.delete(index);
+        updateCounter();
         const next = getRandomUnk();
         if (next === -1) loadQuestion();
         else { index = next; loadQuestion(); }
