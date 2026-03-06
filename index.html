@@ -38,13 +38,39 @@
             margin-top: 15px;
             font-weight: bold;
         }
+        #nicknameInput {
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 90%;
+            margin: 15px 0;
+            box-sizing: border-box;
+        }
+        .nickname-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2196F3;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Thai Alphabet Drill 101 </h2>
-    <div class="letter" id="letter"></div>
+    <!-- Welcome Screen -->
+    <div id="welcomeScreen">
+        <h2>Thai Alphabet Drill 101</h2>
+        <p>Welcome! Please enter your nickname to get started.</p>
+        <input type="text" id="nicknameInput" placeholder="Enter your nickname..." />
+        <button id="startQuizBtn" style="background:#2196F3; margin-top: 10px;">Start Quiz</button>
+    </div>
+
+    <!-- Quiz Screen -->
+    <div id="quizScreen" style="display:none;">
+        <h2>Thai Alphabet Drill 101</h2>
+        <div class="nickname-display" id="nicknameDisplay"></div>
+        <div class="letter" id="letter"></div>
 
     <div id="counter" style="margin-bottom:8px; font-weight:600;"></div>
 
@@ -56,9 +82,64 @@
     </div>
 
     <div class="feedback" id="feedback"></div>
+    </div>
+
 </div>
 
 <script>
+    let nickname = "";
+    let quizStartsCount = 0;
+    const API_URL = "https://YOURSITE-service.onrender.com";
+
+    // Welcome screen event listener
+    document.getElementById("startQuizBtn").addEventListener("click", async () => {
+        const input = document.getElementById("nicknameInput").value.trim();
+        if (!input) {
+            alert("Please enter a nickname to continue!");
+            return;
+        }
+        nickname = input;
+        
+        try {
+            // Call the backend to increment quiz start counter
+            const response = await fetch(`${API_URL}/api/quiz/start`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nickname: nickname })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                alert("Error: " + (error.error || "Failed to start quiz"));
+                return;
+            }
+            
+            const data = await response.json();
+            quizStartsCount = data.quiz_starts_count;
+            
+            document.getElementById("welcomeScreen").style.display = "none";
+            document.getElementById("quizScreen").style.display = "block";
+            document.getElementById("nicknameDisplay").innerText = `Welcome, ${nickname}! (Quiz starts: ${quizStartsCount})`;
+            loadQuestion();
+        } catch (error) {
+            console.error("Error calling API:", error);
+            alert("Could not connect to the server. Starting quiz without tracking.");
+            document.getElementById("welcomeScreen").style.display = "none";
+            document.getElementById("quizScreen").style.display = "block";
+            document.getElementById("nicknameDisplay").innerText = `Welcome, ${nickname}! (Quiz starts: offline)`;
+            loadQuestion();
+        }
+    });
+
+    // Allow Enter key to start quiz
+    document.getElementById("nicknameInput").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            document.getElementById("startQuizBtn").click();
+        }
+    });
+
     const data = [
         { letter: "ก", answer: "ko kai", choices: ["ko kai", "kho khai", "ngo ngu"] },
         { letter: "ข", answer: "kho khai", choices: ["kho khai", "ko kai", "kho khuat"] },
@@ -194,7 +275,9 @@
         if (choice === data[index].answer) {
             feedback.style.color = "green";
             feedback.innerText = "Correct u are the best 67!";
-            // Optionally mark correct answers as known automatically? for now, don't auto-mark
+            // Automatically mark correct answers as known
+            known.add(index);
+            if (seen.has(index)) seen.delete(index);
         } else {
             feedback.style.color = "red";
             feedback.innerText = "Sorry try again" + data[index].answer;
@@ -224,7 +307,8 @@
         loadQuestion();
     });
 
-    loadQuestion();
+    // Focus on nickname input when page loads
+    document.getElementById("nicknameInput").focus();
 </script>
 
 </body>
