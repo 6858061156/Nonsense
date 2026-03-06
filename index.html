@@ -74,6 +74,7 @@
     <div id="counter" style="margin-bottom:8px; font-weight:600;"></div>
 
     <div id="livesDisplay" style="margin-bottom:8px; font-weight:600;"></div>
+    <div id="hearts" style="margin-bottom:8px; font-size:24px; color:red;"></div>
 
     <div id="choices"></div>
 
@@ -91,6 +92,15 @@
     let nickname = "";
     let quizStartsCount = 0;
     let lives = 3;
+
+    function updateLives() {
+        document.getElementById("livesDisplay").innerText = `Lives: ${lives}`;
+        const heartsEl = document.getElementById("hearts");
+        heartsEl.innerText = "";
+        for (let i = 0; i < lives; i++) {
+            heartsEl.innerText += "❤️";
+        }
+    }
     const API_URL = "https://YOURSITE-service.onrender.com";
 
     // Welcome screen event listener
@@ -125,7 +135,7 @@
             document.getElementById("welcomeScreen").style.display = "none";
             document.getElementById("quizScreen").style.display = "block";
             document.getElementById("nicknameDisplay").innerText = `Welcome, ${nickname}! (Quiz starts: ${quizStartsCount})`;
-            document.getElementById("livesDisplay").innerText = `Lives: ${lives}`;
+            updateLives();
             loadQuestion();
         } catch (error) {
             console.error("Error calling API:", error);
@@ -133,7 +143,7 @@
             document.getElementById("welcomeScreen").style.display = "none";
             document.getElementById("quizScreen").style.display = "block";
             document.getElementById("nicknameDisplay").innerText = `Welcome, ${nickname}! (Quiz starts: offline)`;
-            document.getElementById("livesDisplay").innerText = `Lives: ${lives}`;
+            updateLives();
             loadQuestion();
         }
     });
@@ -301,7 +311,7 @@
                 body: JSON.stringify({ nickname: nickname })
             }).then(response => response.json()).then(mistakeData => {
                 lives = mistakeData.lives;
-                document.getElementById("livesDisplay").innerText = `Lives: ${lives}`;
+                updateLives();
                 if (lives <= 0) {
                     feedback.innerText = "Game Over! No lives left.";
                     document.getElementById("choices").innerHTML = "";
