@@ -129,3 +129,6 @@ app.mount("/", StaticFiles(directory=".", html=True), name="static")
 app = FastAPI()
 
 # update cors
+@app.get("/")
+def root():
+    return {"message": "server working"}
