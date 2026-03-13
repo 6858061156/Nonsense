@@ -119,7 +119,7 @@ def record_mistake(request: MistakeRequest):
 @app.get("/api/user/{nickname}")
 def get_user(nickname: str):
     conn = get_db()
- cur = conn.cursor()
+    cur = conn.cursor()
 
     cur.execute(
         "SELECT quiz_starts_count, mistakes_count FROM users WHERE nickname=?",
