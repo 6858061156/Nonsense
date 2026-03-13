@@ -111,24 +111,25 @@ def record_mistake(request: MistakeRequest):
 
 @app.get("/api/user/{nickname}")
 def get_user(nickname: str):
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
     try:
         cur.execute("SELECT * FROM users WHERE nickname = %s", (nickname,))
-user = cur.fetchone()
+        user = cur.fetchone()
 
-if not user:
-    return {
-        "nickname": nickname,
-        "quiz_starts_count": 0,
-        "mistakes_count": 0
-    }
+        if not user:
+            return {
+                "nickname": nickname,
+                "quiz_starts_count": 0,
+                "mistakes_count": 0
+            }
 
-return {
-    "nickname": user["nickname"],
-    "quiz_starts_count": user["quiz_starts_count"],
-    "mistakes_count": user["mistakes_count"]
-}
+        return {
+            "nickname": user["nickname"],
+            "quiz_starts_count": user["quiz_starts_count"],
+            "mistakes_count": user["mistakes_count"]
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
      
 from fastapi.staticfiles import StaticFiles
 app.mount("/", StaticFiles(directory=".", html=True), name="static")
