@@ -125,10 +125,3 @@ def get_user(nickname: str):
      
 from fastapi.staticfiles import StaticFiles
 app.mount("/", StaticFiles(directory=".", html=True), name="static")
-
-app = FastAPI()
-
-# update cors
-@app.get("/")
-def root():
-    return {"message": "server working"}
