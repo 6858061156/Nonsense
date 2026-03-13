@@ -50,7 +50,7 @@ def init_db():
 
 @app.on_event("startup")
 def startup_event():
-    init_db()
+   pass
 
 class StartQuizRequest(BaseModel):
     nickname: str
@@ -121,3 +121,6 @@ def get_user(nickname: str):
     finally:
         cur.close()
         conn.close()
+     
+from fastapi.staticfiles import StaticFiles
+app.mount("/", StaticFiles(directory=".", html=True), name="static")
