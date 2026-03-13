@@ -115,13 +115,20 @@ def get_user(nickname: str):
     cur = conn.cursor(cursor_factory=RealDictCursor)
     try:
         cur.execute("SELECT * FROM users WHERE nickname = %s", (nickname,))
-        user = cur.fetchone()
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        return {"nickname": user['nickname'], "quiz_starts_count": user['quiz_starts_count'], "lives": 3 - user['mistakes']}
-    finally:
-        cur.close()
-        conn.close()
+user = cur.fetchone()
+
+if not user:
+    return {
+        "nickname": nickname,
+        "quiz_starts_count": 0,
+        "mistakes_count": 0
+    }
+
+return {
+    "nickname": user["nickname"],
+    "quiz_starts_count": user["quiz_starts_count"],
+    "mistakes_count": user["mistakes_count"]
+}
      
 from fastapi.staticfiles import StaticFiles
 app.mount("/", StaticFiles(directory=".", html=True), name="static")
