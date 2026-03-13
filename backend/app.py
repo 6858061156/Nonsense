@@ -125,10 +125,3 @@ def get_user(nickname: str):
      
 from fastapi.staticfiles import StaticFiles
 app.mount("/", StaticFiles(directory=".", html=True), name="static")
-@app.get("/")
-def root():
-    return {"message": "API running"}
-
-@app.post("/start")
-def start_quiz():
-    return {"status": "started"}
