@@ -30,13 +30,7 @@ app.add_middleware(
 
 # Database connection
 def get_db_connection():
-    conn = psycopg2.connect(
-        host=os.environ.get('DB_HOST', 'localhost'),
-        database=os.environ.get('DB_NAME', 'quiz_db'),
-        user=os.environ.get('DB_USER', 'postgres'),
-        password=os.environ.get('DB_PASSWORD', 'postgres'),
-        port=os.environ.get('DB_PORT', 5432)
-    )
+    conn = psycopg2.connect(os.environ["DATABASE_URL"])
     return conn
 
 # Initialize database
