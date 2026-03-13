@@ -11,7 +11,14 @@ from fastapi.middleware.cors import CORSMiddleware
 load_dotenv()
 
 app = FastAPI()
-
+def get_db():
+    return psycopg2.connect(
+        host=os.getenv("DB_HOST"),
+        database=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        cursor_factory=RealDictCursor
+    )
 # CORS
 app.add_middleware(
     CORSMiddleware,
@@ -111,8 +118,8 @@ def record_mistake(request: MistakeRequest):
 
 @app.get("/api/user/{nickname}")
 def get_user(nickname: str):
-    conn = sqlite3.connect("quiz.db")
-    cur = conn.cursor()
+    conn = get_db()
+ cur = conn.cursor()
 
     cur.execute(
         "SELECT quiz_starts_count, mistakes_count FROM users WHERE nickname=?",
