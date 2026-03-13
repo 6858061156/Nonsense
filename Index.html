@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Thai Alphabet Drill</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef2f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .letter {
+            font-size: 80px;
+            margin: 15px 0;
+        }
+        button {
+            margin: 6px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            background: #2196F3;
+            color: white;
+        }
+        .feedback {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        #nicknameInput {
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 90%;
+            margin: 15px 0;
+            box-sizing: border-box;
+        }
+        .nickname-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2196F3;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <!-- Welcome Screen -->
+    <div id="welcomeScreen">
+        <h2>Thai Alphabet Drill 101</h2>
+        <p>Welcome! Please enter your nickname to get started.</p>
+        <input type="text" id="nicknameInput" placeholder="Enter your nickname..." />
+        <button id="startQuizBtn" style="background:#2196F3; margin-top: 10px;">Start Quiz</button>
+    </div>
+
+    <div id="quizScreen" style="display:none;">
+        <h2>Thai Alphabet Drill 101</h2>
+        <div class="nickname-display" id="nicknameDisplay"></div>
+        <div class="letter" id="letter"></div>
+
+    <div id="counter" style="margin-bottom:8px; font-weight:600;"></div>
+
+    <div id="livesDisplay" style="margin-bottom:8px; font-weight:600;"></div>
+    <div id="hearts" style="margin-bottom:8px; font-size:24px; color:red;"></div>
+
+    <div id="choices"></div>
+
+    <div style="margin-top:10px;">
+        <button id="markKnownBtn" style="background:#4CAF50;">Mark Known</button>
+        <button id="resetKnownBtn" style="background:#f44336; display:none;">Reset Known</button>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+    </div>
+
+</div>
+
+<script>
+    let nickname = "";
+    let quizStartsCount = 0;
+    let lives = 3;
+
+    function updateLives() {
+        document.getElementById("livesDisplay").innerText = `Lives: ${lives}`;
+        const heartsEl = document.getElementById("hearts");
+        heartsEl.innerText = "";
+        for (let i = 0; i < lives; i++) {
+            heartsEl.innerText += "❤️";
+        }
+    }
+    const API_URL = "https://YOURSITE-service.onrender.com";
+
+    // Welcome screen event listener
+    document.getElementById("startQuizBtn").addEventListener("click", async () => {
+        const input = document.getElementById("nicknameInput").value.trim();
+        if (!input) {
+            alert("Please enter a nickname to continue!");
+            return;
+        }
+        nickname = input;
+        
+        try {
+            // Call the backend to increment quiz start counter
+            const response = await fetch(`${API_URL}/api/quiz/start`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nickname: nickname })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                alert("Error: " + (error.error || "Failed to start quiz"));
+                return;
+            }
+            
+            const data = await response.json();
+            quizStartsCount = data.quiz_starts_count;
+            lives = data.lives;
+            
+            document.getElementById("welcomeScreen").style.display = "none";
+            document.getElementById("quizScreen").style.display = "block";
+            document.getElementById("nicknameDisplay").innerText = `Welcome, ${nickname}! (Quiz starts: ${quizStartsCount})`;
+            updateLives();
+            loadQuestion();
+        } catch (error) {
+            console.error("Error calling API:", error);
+            alert("Could not connect to the server. Starting quiz without tracking.");
+            document.getElementById("welcomeScreen").style.display = "none";
+            document.getElementById("quizScreen").style.display = "block";
+            document.getElementById("nicknameDisplay").innerText = `Welcome, ${nickname}! (Quiz starts: offline)`;
+            updateLives();
+            loadQuestion();
+        }
+    });
+
+    // Allow Enter key to start quiz
+    document.getElementById("nicknameInput").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            document.getElementById("startQuizBtn").click();
+        }
+    });
+
+    const data = [
+        { letter: "ก", answer: "ko kai", choices: ["ko kai", "kho khai", "ngo ngu"] },
+        { letter: "ข", answer: "kho khai", choices: ["kho khai", "ko kai", "kho khuat"] },
+        { letter: "ฃ", answer: "kho khuat", choices: ["kho khuat", "kho khwai", "kho khon"] },
+        { letter: "ค", answer: "kho khwai", choices: ["kho khwai", "kho khuat", "ko kai"] },
+        { letter: "ฅ", answer: "kho khon", choices: ["kho khon", "kho rakhang", "ko kai"] },
+        { letter: "ฆ", answer: "kho rakhang", choices: ["kho rakhang", "kho khon", "ngo ngu"] },
+        { letter: "ง", answer: "ngo ngu", choices: ["ngo ngu", "no nen", "ko kai"] },
+        { letter: "จ", answer: "cho chan", choices: ["cho chan", "cho chang", "cho choe"] },
+        { letter: "ฉ", answer: "cho ching", choices: ["cho ching", "cho chan", "cho chang"] },
+        { letter: "ช", answer: "cho chang", choices: ["cho chang", "cho chan", "so so"] },
+        { letter: "ซ", answer: "so so", choices: ["so so", "so suea", "so sala"] },
+        { letter: "ฌ", answer: "cho choe", choices: ["cho choe", "cho ching", "cho chang"] },
+        { letter: "ญ", answer: "yo ying", choices: ["yo ying", "yo yak", "yo ying (alt)"] },
+        { letter: "ฎ", answer: "do chada", choices: ["do chada", "do dek", "to patak"] },
+        { letter: "ฏ", answer: "to patak", choices: ["to patak", "to tao", "do chada"] },
+        { letter: "ฐ", answer: "tho than", choices: ["tho than", "tho thahan", "tho nangmontho"] },
+        { letter: "ฑ", answer: "tho nangmontho", choices: ["tho nangmontho", "tho phuthao", "tho than"] },
+        { letter: "ฒ", answer: "tho phuthao", choices: ["tho phuthao", "tho nangmontho", "tho than"] },
+        { letter: "ณ", answer: "no nen", choices: ["no nen", "no nu", "ngo ngu"] },
+        { letter: "ด", answer: "do dek", choices: ["do dek", "do chada", "to tao"] },
+        { letter: "ต", answer: "to tao", choices: ["to tao", "to patak", "do dek"] },
+        { letter: "ถ", answer: "tho thong", choices: ["tho thong", "tho than", "tho thahan"] },
+        { letter: "ท", answer: "tho thahan", choices: ["tho thahan", "tho thong", "tho than"] },
+        { letter: "ธ", answer: "tho thong (long)", choices: ["tho thong (long)", "tho thahan", "tho than"] },
+        { letter: "น", answer: "no nu", choices: ["no nu", "no nen", "na (alt)"] },
+        { letter: "บ", answer: "bo baimai", choices: ["bo baimai", "bo bplaa", "po pla"] },
+        { letter: "ป", answer: "po pla", choices: ["po pla", "bo baimai", "pa (alt)"] },
+        { letter: "ผ", answer: "pho phueng", choices: ["pho phueng", "pho phan", "ph (alt)"] },
+        { letter: "ฝ", answer: "fo fa", choices: ["fo fa", "fo fan", "pho phueng"] },
+        { letter: "พ", answer: "pho phan", choices: ["pho phan", "pho phueng", "fo fa"] },
+        { letter: "ฟ", answer: "fo fan", choices: ["fo fan", "fo fa", "pho phan"] },
+        { letter: "ภ", answer: "pho samphao", choices: ["pho samphao", "pho phan", "po pla"] },
+        { letter: "ม", answer: "mo ma", choices: ["mo ma", "mu (alt)", "ma (alt)"] },
+        { letter: "ย", answer: "yo yak", choices: ["yo yak", "yo ying", "ya (alt)"] },
+        { letter: "ร", answer: "ro rua", choices: ["ro rua", "r (alt)", "lo ling"] },
+        { letter: "ล", answer: "lo ling", choices: ["lo ling", "lo chu-la", "la (alt)"] },
+        { letter: "ว", answer: "wo waen", choices: ["wo waen", "w (alt)", "wo (alt)"] },
+        { letter: "ศ", answer: "so sala", choices: ["so sala", "so suea", "so rue-si"] },
+        { letter: "ษ", answer: "so rue-si", choices: ["so rue-si", "so sala", "so suea"] },
+        { letter: "ส", answer: "so suea", choices: ["so suea", "so sala", "so so"] },
+        { letter: "ห", answer: "ho hip", choices: ["ho hip", "ho nok-huk", "h (alt)"] },
+        { letter: "ฬ", answer: "lo chu-la", choices: ["lo chu-la", "lo ling", "la (alt)"] },
+        { letter: "อ", answer: "o ang", choices: ["o ang", "o (alt)", "a (alt)"] },
+        { letter: "ฮ", answer: "ho nok-huk", choices: ["ho nok-huk", "ho hip", "h (alt)"] }
+    ];
+
+    let index = 0;
+    const known = new Set();
+    const seen = new Set();
+
+    function updateCounter() {
+        const remaining = Math.max(0, data.length - known.size);
+        document.getElementById("counter").innerText = `Remaining: ${remaining} / ${data.length}`;
+        document.getElementById("resetKnownBtn").style.display = known.size > 0 ? "inline-block" : "none";
+    }
+
+    function findNextUnk(startIndex) {
+        if (known.size >= data.length) return -1;
+        for (let i = 0; i < data.length; i++) {
+            const idx = (startIndex + i) % data.length;
+            if (!known.has(idx)) return idx;
+        }
+        return -1;
+    }
+
+    function getRandomUnk() {
+        if (known.size >= data.length) return -1;
+        let unknowns = [];
+        for (let i = 0; i < data.length; i++) if (!known.has(i) && !seen.has(i)) unknowns.push(i);
+        // if all remaining unknowns were seen this round, start a new cycle (clear seen)
+        if (unknowns.length === 0) {
+            // reset seen for next cycle, but keep known
+            seen.clear();
+            for (let i = 0; i < data.length; i++) if (!known.has(i)) unknowns.push(i);
+        }
+        if (unknowns.length === 0) return -1;
+        return unknowns[Math.floor(Math.random() * unknowns.length)];
+    }
+
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function loadQuestion() {
+        updateCounter();
+        const letterEl = document.getElementById("letter");
+        const feedbackEl = document.getElementById("feedback");
+        feedbackEl.innerText = "";
+
+        // pick a random un-known card
+        if (known.size >= data.length) {
+            letterEl.innerText = "All cards known!";
+            document.getElementById("choices").innerHTML = "";
+            document.getElementById("markKnownBtn").style.display = "none";
+            return;
+        }
+        const nextIdx = getRandomUnk();
+        if (nextIdx === -1) {
+            letterEl.innerText = "All cards known!";
+            document.getElementById("choices").innerHTML = "";
+            document.getElementById("markKnownBtn").style.display = "none";
+            return;
+        }
+        index = nextIdx;
+
+        letterEl.innerText = data[index].letter;
+
+        // mark this card as seen for this cycle (reduces remaining)
+        seen.add(index);
+        updateCounter();
+
+        const choicesDiv = document.getElementById("choices");
+        choicesDiv.innerHTML = "";
+
+        const shuffled = shuffleArray(data[index].choices.slice());
+        shuffled.forEach(choice => {
+            const btn = document.createElement("button");
+            btn.innerText = choice;
+            btn.onclick = () => checkAnswer(choice);
+            choicesDiv.appendChild(btn);
+        });
+        document.getElementById("markKnownBtn").style.display = "inline-block";
+    }
+
+    function checkAnswer(choice) {
+        const feedback = document.getElementById("feedback");
+
+        if (choice === data[index].answer) {
+            feedback.style.color = "green";
+            feedback.innerText = "Correct u are the best 67!";
+            // Automatically mark correct answers as known
+            known.add(index);
+            if (seen.has(index)) seen.delete(index);
+            setTimeout(() => {
+                const next = getRandomUnk();
+                if (next === -1) index = 0;
+                else index = next;
+                loadQuestion();
+            }, 2000);
+        } else {
+            feedback.style.color = "red";
+            feedback.innerText = "Sorry try again" + data[index].answer;
+            // decrement lives locally immediately
+            lives = Math.max(0, lives - 1);
+            updateLives();
+            if (lives <= 0) {
+                feedback.innerText = "Game Over! No lives left.";
+                document.getElementById("choices").innerHTML = "";
+                document.getElementById("markKnownBtn").style.display = "none";
+                return;
+            }
+            // still attempt to record mistake on backend, but ignore outcome
+            fetch(`${API_URL}/api/quiz/mistake`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nickname: nickname })
+            }).catch(error => {
+                console.error("Error recording mistake:", error);
+            });
+            // queue next question
+            setTimeout(() => {
+                const next = getRandomUnk();
+                if (next === -1) index = 0;
+                else index = next;
+                loadQuestion();
+            }, 2000);
+        }
+    }
+
+    document.getElementById("markKnownBtn").addEventListener("click", () => {
+        known.add(index);
+        // if it was seen this cycle, remove from seen so we don't double-count
+        if (seen.has(index)) seen.delete(index);
+        updateCounter();
+        const next = getRandomUnk();
+        if (next === -1) loadQuestion();
+        else { index = next; loadQuestion(); }
+    });
+
+    document.getElementById("resetKnownBtn").addEventListener("click", () => {
+        known.clear();
+        index = 0;
+        loadQuestion();
+    });
+
+    // Focus on nickname input when page loads
+    document.getElementById("nicknameInput").focus();
+</script>
+
+</body>
+</html>
