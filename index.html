@@ -353,10 +353,3 @@
 
 </body>
 </html>
-@app.get("/")
-def root():
-    return {"message": "API running"}
-
-@app.post("/start")
-def start_quiz():
-    return {"status": "started"}
