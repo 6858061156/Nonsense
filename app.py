@@ -11,16 +11,8 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Database connection
 def get_db_connection():
-    conn = psycopg2.connect(
-        host=os.environ.get('DB_HOST', 'localhost'),
-        database=os.environ.get('DB_NAME', 'quiz_db'),
-        user=os.environ.get('DB_USER', 'postgres'),
-        password=os.environ.get('DB_PASSWORD', 'postgres'),
-        port=os.environ.get('DB_PORT', 5432)
-    )
-    return conn
+    return psycopg2.connect(os.environ["DATABASE_URL"])
 
 # Initialize database
 def init_db():
@@ -108,6 +100,6 @@ def health():
     """Health check endpoint"""
     return jsonify({'status': 'ok'}), 200
 
-if __name__ == '__main__':
+@app.before_first_request
+def startup():
     init_db()
-    app.run(debug=True, host='0.0.0.0', port=5000)
