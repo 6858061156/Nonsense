@@ -137,3 +137,5 @@ def get_user(nickname: str):
     }
 from fastapi.staticfiles import StaticFiles
 app.mount("/", StaticFiles(directory=".", html=True), name="static")
+
+print("START QUIZ CALLED")
